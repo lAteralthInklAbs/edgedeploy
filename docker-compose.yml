@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  edgedeploy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: edgedeploy:latest
+    container_name: edgedeploy
+    volumes:
+      - ./results:/app/results
+      - ./configs:/app/configs:ro
+    environment:
+      - PYTHONPATH=/app
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.drift import DriftEnsemble; print('ok')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Evaluation runner
+  eval:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./results:/app/results
+      - ./configs:/app/configs:ro
+    command: >
+      sh -c "
+        python scripts/run_qat_eval.py --epochs 2 --output /app/results/qat_results.json &&
+        python scripts/run_drift_eval.py --output /app/results/drift_results.json
+      "
+    depends_on:
+      - edgedeploy
+
+  # Test runner
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./fixtures:/app/fixtures:ro
+    command: pytest tests/ -v --tb=short
+
+
