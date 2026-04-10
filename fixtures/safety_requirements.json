@@ -1,0 +1,148 @@
+{
+  "requirements": [
+    {
+      "req_id": "SYS-001",
+      "title": "Vehicle Perception System Safety",
+      "description": "The vehicle perception system shall detect and classify obstacles with 99.5% accuracy under all specified operating conditions.",
+      "asil_level": "ASIL_D",
+      "status": "approved",
+      "parent_ids": [],
+      "child_ids": ["HW-001", "SW-001", "SW-002"],
+      "test_case_ids": ["TC-SYS-001", "TC-SYS-002"],
+      "verification_method": "test",
+      "rationale": "Critical safety function for autonomous driving"
+    },
+    {
+      "req_id": "HW-001",
+      "title": "Sensor Redundancy",
+      "description": "The hardware shall provide redundant sensor inputs (camera + LiDAR) for obstacle detection.",
+      "asil_level": "ASIL_C",
+      "status": "implemented",
+      "parent_ids": ["SYS-001"],
+      "child_ids": ["HW-011", "HW-012"],
+      "test_case_ids": ["TC-HW-001"],
+      "source_file_refs": ["src/sensors/redundancy.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "HW-011",
+      "title": "Camera Subsystem",
+      "description": "Camera subsystem shall provide 30fps image stream at minimum 720p resolution.",
+      "asil_level": "ASIL_B",
+      "status": "verified",
+      "parent_ids": ["HW-001"],
+      "child_ids": [],
+      "test_case_ids": ["TC-HW-011"],
+      "source_file_refs": ["src/sensors/camera.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "HW-012",
+      "title": "LiDAR Subsystem",
+      "description": "LiDAR subsystem shall provide point cloud data at 10Hz with 100m range.",
+      "asil_level": "ASIL_B",
+      "status": "verified",
+      "parent_ids": ["HW-001"],
+      "child_ids": [],
+      "test_case_ids": ["TC-HW-012"],
+      "source_file_refs": ["src/sensors/lidar.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "SW-001",
+      "title": "Object Detection Model",
+      "description": "The object detection model shall achieve mAP >= 0.85 on the validation dataset.",
+      "asil_level": "ASIL_C",
+      "status": "implemented",
+      "parent_ids": ["SYS-001"],
+      "child_ids": ["SW-011", "SW-012"],
+      "test_case_ids": ["TC-SW-001", "TC-SW-001a"],
+      "source_file_refs": ["src/models/detection.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "SW-011",
+      "title": "Model Input Validation",
+      "description": "The model shall validate input dimensions and reject invalid inputs safely.",
+      "asil_level": "ASIL_A",
+      "status": "verified",
+      "parent_ids": ["SW-001"],
+      "child_ids": [],
+      "test_case_ids": ["TC-SW-011"],
+      "source_file_refs": ["src/models/validation.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "SW-012",
+      "title": "Model Inference Timeout",
+      "description": "Model inference shall complete within 100ms or return safe default.",
+      "asil_level": "ASIL_B",
+      "status": "implemented",
+      "parent_ids": ["SW-001"],
+      "child_ids": [],
+      "test_case_ids": ["TC-SW-012"],
+      "source_file_refs": ["src/models/inference.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "SW-002",
+      "title": "Drift Detection",
+      "description": "The system shall detect data drift and alert operators within 5 minutes.",
+      "asil_level": "ASIL_B",
+      "status": "implemented",
+      "parent_ids": ["SYS-001"],
+      "child_ids": ["SW-021", "SW-022"],
+      "test_case_ids": ["TC-SW-002"],
+      "source_file_refs": ["src/drift/drift_ensemble.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "SW-021",
+      "title": "PSI Drift Detection",
+      "description": "Population Stability Index shall be computed for all input features.",
+      "asil_level": "ASIL_A",
+      "status": "verified",
+      "parent_ids": ["SW-002"],
+      "child_ids": [],
+      "test_case_ids": ["TC-SW-021"],
+      "source_file_refs": ["src/drift/drift_ensemble.py"],
+      "verification_method": "test"
+    },
+    {
+      "req_id": "SW-022",
+      "title": "Drift Alert Threshold",
+      "description": "Drift alerts shall be triggered when ensemble score exceeds 0.3.",
+      "asil_level": "ASIL_A",
+      "status": "verified",
+      "parent_ids": ["SW-002"],
+      "child_ids": [],
+      "test_case_ids": ["TC-SW-022"],
+      "source_file_refs": ["src/drift/drift_ensemble.py"],
+      "verification_method": "analysis"
+    }
+  ],
+  "trace_links": [
+    {
+      "source_id": "SYS-001",
+      "target_id": "HW-001",
+      "link_type": "derives",
+      "confidence": 1.0,
+      "rationale": "System requirement decomposed to hardware"
+    },
+    {
+      "source_id": "SYS-001",
+      "target_id": "SW-001",
+      "link_type": "derives",
+      "confidence": 1.0,
+      "rationale": "System requirement decomposed to software"
+    },
+    {
+      "source_id": "TC-SYS-001",
+      "target_id": "SYS-001",
+      "link_type": "verifies",
+      "confidence": 1.0,
+      "rationale": "Integration test verifies system requirement"
+    }
+  ]
+}
+
