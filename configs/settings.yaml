@@ -1,0 +1,110 @@
+# EdgeDeploy Configuration
+# ISO 26262-compliant MLOps pipeline for automotive edge deployment
+
+# Quantization settings
+quantization:
+  qat_epochs: 5
+  calibration_batches: 100
+  sensitivity_threshold: 0.02
+  target_compression: 4.0
+  accuracy_retention_target: 0.97
+  supported_precisions:
+    - INT8
+    - FP16
+    - FP32
+
+# Drift detection settings
+drift:
+  psi_threshold: 0.2
+  mmd_threshold: 0.1
+  adwin_delta: 0.002
+  adwin_window_size: 1000
+  persistence_required: 3
+  ensemble_weights:
+    psi: 0.4
+    mmd: 0.35
+    adwin: 0.25
+  alert_levels:
+    low: 0.1
+    medium: 0.2
+    high: 0.3
+
+# Safety requirements tracing
+safety:
+  asil_levels:
+    - QM
+    - ASIL_A
+    - ASIL_B
+    - ASIL_C
+    - ASIL_D
+  coverage_targets:
+    test_coverage: 0.80
+    upward_traceability: 0.70
+    asil_d_coverage: 1.00
+  strict_mode: true
+
+# Canary deployment settings
+deployment:
+  stages:
+    - name: canary
+      traffic_percentage: 5.0
+      duration_minutes: 15
+      min_success_rate: 0.95
+      max_latency_p99_ms: 500
+
+    - name: early_adopter
+      traffic_percentage: 25.0
+      duration_minutes: 30
+      min_success_rate: 0.95
+      max_latency_p99_ms: 500
+
+    - name: majority
+      traffic_percentage: 50.0
+      duration_minutes: 30
+      min_success_rate: 0.95
+      max_latency_p99_ms: 500
+
+    - name: full_rollout
+      traffic_percentage: 100.0
+      duration_minutes: 60
+      min_success_rate: 0.95
+      max_latency_p99_ms: 500
+
+  enable_auto_rollback: true
+  max_rollback_attempts: 3
+  cooldown_between_stages_seconds: 60
+
+# ONNX export settings
+export:
+  opset_version: 17
+  optimize: true
+  validate_model: true
+  test_inference: true
+  target_runtimes:
+    - onnxruntime
+    - tensorrt
+    - openvino
+  dynamic_axes:
+    input:
+      0: batch_size
+    output:
+      0: batch_size
+
+# Logging settings
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  handlers:
+    - console
+    - file
+  file_path: logs/edgedeploy.log
+
+# AWS deployment settings (Terraform)
+aws:
+  region: us-west-2
+  s3_bucket_prefix: edgedeploy
+  lambda_memory_mb: 1024
+  lambda_timeout_seconds: 300
+  sagemaker_instance_type: ml.m5.large
+
+
